@@ -107,15 +107,6 @@ export function RevenueChart() {
                 fillOpacity={1}
                 fill="url(#colorRevenue)"
               />
-              <Area
-                type="monotone"
-                dataKey="orders"
-                stroke="hsl(142, 76%, 36%)"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorOrders)"
-                yAxisId={1}
-              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
