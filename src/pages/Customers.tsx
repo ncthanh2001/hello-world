@@ -2,6 +2,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -107,6 +108,8 @@ const getInitials = (name: string) => {
 };
 
 const Customers = () => {
+  const navigate = useNavigate();
+
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in">
@@ -116,7 +119,7 @@ const Customers = () => {
             <h1 className="text-2xl font-bold text-foreground">Tất cả khách hàng</h1>
             <p className="text-muted-foreground">Quản lý danh sách khách hàng của cửa hàng</p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => navigate("/customers/create")}>
             <Plus className="h-4 w-4" />
             Thêm khách hàng
           </Button>
