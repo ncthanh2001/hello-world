@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -11,13 +14,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ArrowLeft, Save, ChevronDown, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+
+const customerGroups = [
+  { id: "regular", label: "Khách thường" },
+  { id: "premium", label: "Premium" },
+  { id: "vip", label: "VIP" },
+  { id: "wholesale", label: "Khách sỉ" },
+  { id: "partner", label: "Đối tác" },
+];
 
 export default function CustomerCreate() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+
+  const toggleGroup = (groupId: string) => {
+    setSelectedGroups((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((id) => id !== groupId)
+        : [...prev, groupId]
+    );
+  };
+
+  const removeGroup = (groupId: string) => {
+    setSelectedGroups((prev) => prev.filter((id) => id !== groupId));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,16 +175,59 @@ export default function CustomerCreate() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label>Nhóm khách hàng</Label>
-                    <Select>
-                      <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Chọn nhóm" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="regular">Khách thường</SelectItem>
-                        <SelectItem value="premium">Premium</SelectItem>
-                        <SelectItem value="vip">VIP</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between bg-background font-normal"
+                        >
+                          {selectedGroups.length > 0
+                            ? `Đã chọn ${selectedGroups.length} nhóm`
+                            : "Chọn nhóm"}
+                          <ChevronDown className="h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-2 bg-popover" align="start">
+                        <div className="space-y-2">
+                          {customerGroups.map((group) => (
+                            <div
+                              key={group.id}
+                              className="flex items-center gap-2 p-2 rounded hover:bg-secondary cursor-pointer"
+                              onClick={() => toggleGroup(group.id)}
+                            >
+                              <Checkbox
+                                checked={selectedGroups.includes(group.id)}
+                                onCheckedChange={() => toggleGroup(group.id)}
+                              />
+                              <span className="text-sm">{group.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    {selectedGroups.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {selectedGroups.map((groupId) => {
+                          const group = customerGroups.find((g) => g.id === groupId);
+                          return (
+                            <Badge
+                              key={groupId}
+                              variant="secondary"
+                              className="gap-1 pr-1"
+                            >
+                              {group?.label}
+                              <button
+                                type="button"
+                                onClick={() => removeGroup(groupId)}
+                                className="ml-1 rounded-full hover:bg-muted p-0.5"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Nguồn khách hàng</Label>
