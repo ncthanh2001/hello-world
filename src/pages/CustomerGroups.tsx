@@ -250,6 +250,10 @@ const CustomerGroups = () => {
   // Expanded state for tree
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set([1, 6, 7]));
 
+  // Pagination state
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [displayedCount, setDisplayedCount] = useState<number>(10);
+
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [discountFilter, setDiscountFilter] = useState<string>("all");
@@ -370,6 +374,19 @@ const CustomerGroups = () => {
   };
 
   const visibleGroups = filteredGroups.filter(isNodeVisible);
+
+  // Reset displayed count when filters change
+  const resetDisplayedCount = () => {
+    setDisplayedCount(pageSize);
+  };
+
+  // Paginated groups for display
+  const paginatedGroups = visibleGroups.slice(0, displayedCount);
+  const hasMore = displayedCount < visibleGroups.length;
+
+  const loadMore = () => {
+    setDisplayedCount(prev => Math.min(prev + pageSize, visibleGroups.length));
+  };
 
   const hasChildren = (id: number) => {
     return customerGroups.some(g => g.parentId === id);
@@ -651,9 +668,31 @@ const CustomerGroups = () => {
         {/* Groups Table with Tree View */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-card-foreground">
-              Danh sách nhóm ({visibleGroups.length})
-            </CardTitle>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <CardTitle className="text-lg font-semibold text-card-foreground">
+                Danh sách nhóm ({paginatedGroups.length}/{visibleGroups.length})
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Hiển thị:</span>
+                <Select value={pageSize.toString()} onValueChange={(value) => {
+                  const newSize = parseInt(value);
+                  setPageSize(newSize);
+                  setDisplayedCount(newSize);
+                }}>
+                  <SelectTrigger className="w-20 h-8 bg-secondary border-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-muted-foreground">nhóm</span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
@@ -678,7 +717,7 @@ const CustomerGroups = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {visibleGroups.length === 0 ? (
+                {paginatedGroups.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={visibleColumns.length + 1}
@@ -688,7 +727,7 @@ const CustomerGroups = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  visibleGroups.map((group) => (
+                  paginatedGroups.map((group) => (
                     <TableRow key={group.id} className="border-border hover:bg-secondary/50">
                       {isColumnVisible("name") && (
                         <TableCell>
@@ -776,6 +815,19 @@ const CustomerGroups = () => {
                 )}
               </TableBody>
             </Table>
+
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="flex justify-center pt-4 border-t border-border mt-4">
+                <Button
+                  variant="outline"
+                  onClick={loadMore}
+                  className="gap-2"
+                >
+                  Tải thêm ({visibleGroups.length - displayedCount} còn lại)
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
