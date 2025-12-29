@@ -35,6 +35,18 @@ export default function CustomerCreate() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  
+  // Form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  
+  // Validation errors
+  const [errors, setErrors] = useState<{
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  }>({});
 
   const toggleGroup = (groupId: string) => {
     setSelectedGroups((prev) =>
@@ -48,8 +60,39 @@ export default function CustomerCreate() {
     setSelectedGroups((prev) => prev.filter((id) => id !== groupId));
   };
 
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    
+    if (!firstName.trim()) {
+      newErrors.firstName = "Họ là bắt buộc";
+    }
+    
+    if (!lastName.trim()) {
+      newErrors.lastName = "Tên là bắt buộc";
+    }
+    
+    if (!email.trim()) {
+      newErrors.email = "Email là bắt buộc";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Email không hợp lệ";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng điền đầy đủ thông tin bắt buộc",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     toast({
       title: "Thành công",
       description: "Đã thêm khách hàng mới",
@@ -87,30 +130,60 @@ export default function CustomerCreate() {
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">Họ</Label>
+                      <Label htmlFor="firstName">
+                        Họ <span className="text-destructive">*</span>
+                      </Label>
                       <Input
                         id="firstName"
                         placeholder="Nhập họ"
-                        className="bg-background"
+                        className={`bg-background ${errors.firstName ? "border-destructive" : ""}`}
+                        value={firstName}
+                        onChange={(e) => {
+                          setFirstName(e.target.value);
+                          if (errors.firstName) setErrors(prev => ({ ...prev, firstName: undefined }));
+                        }}
                       />
+                      {errors.firstName && (
+                        <p className="text-sm text-destructive">{errors.firstName}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Tên</Label>
+                      <Label htmlFor="lastName">
+                        Tên <span className="text-destructive">*</span>
+                      </Label>
                       <Input
                         id="lastName"
                         placeholder="Nhập tên"
-                        className="bg-background"
+                        className={`bg-background ${errors.lastName ? "border-destructive" : ""}`}
+                        value={lastName}
+                        onChange={(e) => {
+                          setLastName(e.target.value);
+                          if (errors.lastName) setErrors(prev => ({ ...prev, lastName: undefined }));
+                        }}
                       />
+                      {errors.lastName && (
+                        <p className="text-sm text-destructive">{errors.lastName}</p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">
+                      Email <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="email"
                       type="email"
                       placeholder="email@example.com"
-                      className="bg-background"
+                      className={`bg-background ${errors.email ? "border-destructive" : ""}`}
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errors.email) setErrors(prev => ({ ...prev, email: undefined }));
+                      }}
                     />
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Số điện thoại</Label>
