@@ -44,9 +44,18 @@ interface Specification {
   value: string;
 }
 
+interface FeatureMedia {
+  id: string;
+  type: "image" | "video";
+  url: string;
+  name: string;
+}
+
 interface Feature {
   id: string;
-  content: string;
+  title: string;
+  description: string;
+  media: FeatureMedia | null;
 }
 
 interface MediaFile {
@@ -69,7 +78,7 @@ const ProductCreate = () => {
     { id: "1", name: "", value: "" }
   ]);
   const [features, setFeatures] = useState<Feature[]>([
-    { id: "1", content: "" }
+    { id: "1", title: "", description: "", media: null }
   ]);
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
 
@@ -107,12 +116,34 @@ const ProductCreate = () => {
 
   // Handle features
   const addFeature = () => {
-    setFeatures(prev => [...prev, { id: Date.now().toString(), content: "" }]);
+    setFeatures(prev => [...prev, { id: Date.now().toString(), title: "", description: "", media: null }]);
   };
 
-  const updateFeature = (id: string, content: string) => {
+  const updateFeature = (id: string, field: "title" | "description", value: string) => {
     setFeatures(prev => 
-      prev.map(feature => feature.id === id ? { ...feature, content } : feature)
+      prev.map(feature => feature.id === id ? { ...feature, [field]: value } : feature)
+    );
+  };
+
+  const handleFeatureMediaUpload = (featureId: string, e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setFeatures(prev => 
+        prev.map(feature => 
+          feature.id === featureId 
+            ? { ...feature, media: { id: Date.now().toString(), type, url, name: file.name } }
+            : feature
+        )
+      );
+    }
+  };
+
+  const removeFeatureMedia = (featureId: string) => {
+    setFeatures(prev => 
+      prev.map(feature => 
+        feature.id === featureId ? { ...feature, media: null } : feature
+      )
     );
   };
 
@@ -321,24 +352,116 @@ const ProductCreate = () => {
                   Thêm tính năng
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {features.map((feature) => (
-                  <div key={feature.id} className="flex items-center gap-3">
-                    <Input
-                      value={feature.content}
-                      onChange={(e) => updateFeature(feature.id, e.target.value)}
-                      placeholder="Nhập tính năng (VD: Chống nước IP68)"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeFeature(feature.id)}
-                      disabled={features.length === 1}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+              <CardContent className="space-y-4">
+                {features.map((feature, index) => (
+                  <div key={feature.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-muted-foreground">Tính năng {index + 1}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeFeature(feature.id)}
+                        disabled={features.length === 1}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Tiêu đề tính năng</Label>
+                      <Input
+                        value={feature.title}
+                        onChange={(e) => updateFeature(feature.id, "title", e.target.value)}
+                        placeholder="VD: Chống nước IP68"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Mô tả</Label>
+                      <Textarea
+                        value={feature.description}
+                        onChange={(e) => updateFeature(feature.id, "description", e.target.value)}
+                        placeholder="Mô tả chi tiết về tính năng..."
+                        rows={2}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Hình ảnh / Video</Label>
+                      {feature.media ? (
+                        <div className="relative group w-fit">
+                          {feature.media.type === "image" ? (
+                            <img
+                              src={feature.media.url}
+                              alt={feature.media.name}
+                              className="w-40 h-28 object-cover rounded-lg border"
+                            />
+                          ) : (
+                            <video
+                              src={feature.media.url}
+                              className="w-40 h-28 object-cover rounded-lg border"
+                              controls
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => removeFeatureMedia(feature.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <Badge 
+                            variant="secondary" 
+                            className="absolute bottom-2 left-2 text-xs"
+                          >
+                            {feature.media.type === "image" ? "Ảnh" : "Video"}
+                          </Badge>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <div>
+                            <input
+                              type="file"
+                              id={`featureImage-${feature.id}`}
+                              accept="image/*"
+                              onChange={(e) => handleFeatureMediaUpload(feature.id, e, "image")}
+                              className="hidden"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => document.getElementById(`featureImage-${feature.id}`)?.click()}
+                            >
+                              <ImageIcon className="mr-2 h-4 w-4" />
+                              Tải ảnh
+                            </Button>
+                          </div>
+                          <div>
+                            <input
+                              type="file"
+                              id={`featureVideo-${feature.id}`}
+                              accept="video/*"
+                              onChange={(e) => handleFeatureMediaUpload(feature.id, e, "video")}
+                              className="hidden"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => document.getElementById(`featureVideo-${feature.id}`)?.click()}
+                            >
+                              <Video className="mr-2 h-4 w-4" />
+                              Tải video
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </CardContent>
