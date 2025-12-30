@@ -269,6 +269,31 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
           max-width: 100%;
         }
         
+        /* List styles */
+        .ckeditor-container .ck-content ul {
+          list-style-type: disc;
+          padding-left: 2em;
+          margin: 0.5em 0;
+        }
+        
+        .ckeditor-container .ck-content ol {
+          list-style-type: decimal;
+          padding-left: 2em;
+          margin: 0.5em 0;
+        }
+        
+        .ckeditor-container .ck-content ul ul {
+          list-style-type: circle;
+        }
+        
+        .ckeditor-container .ck-content ul ul ul {
+          list-style-type: square;
+        }
+        
+        .ckeditor-container .ck-content li {
+          margin: 0.25em 0;
+        }
+        
         .ckeditor-container .ck-content .table {
           margin: 1em 0;
         }
