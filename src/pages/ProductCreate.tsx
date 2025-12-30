@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -291,19 +292,23 @@ const ProductCreate = () => {
                       <p className="text-sm text-destructive">{errors.productCode}</p>
                     )}
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Mô tả sản phẩm</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Nhập mô tả chi tiết về sản phẩm"
-                    rows={4}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Product Description with Rich Text Editor */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Mô tả sản phẩm</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RichTextEditor
+                content={description}
+                onChange={setDescription}
+                placeholder="Nhập mô tả chi tiết về sản phẩm"
+              />
+            </CardContent>
+          </Card>
 
             {/* Technical Specifications */}
             <Card>
